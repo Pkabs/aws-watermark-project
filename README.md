@@ -10,3 +10,6 @@ There are two S3 buckets, one to store original images and the other one to stor
 
 ## Lambda function
 The lambda function is a python function that uses pillow which is an open-source image processing library. 
+
+## Infrastructure as Code
+The project uses terraform to create, provison and manage the AWS resources.
