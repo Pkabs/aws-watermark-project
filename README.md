@@ -19,7 +19,7 @@ Cloud watch captures lambda function logs that are used to check and correct any
 The project incorporates Infrastructure As Code to create, manage and provision AWS resources as code using terraform.
 
 ## Challenges
-Adding the pillow libray to the lambda function was a challenge. At first, creating the library package then including it on the function package did not work as the function was failing to find the library package.
+Adding the pillow library to the lambda function was a challenge. At first, creating the library package then including it on the function package did not work as the function was failing to find the library package.
 
 After researching, I found a better way of handling libraries which was by using lambda layers. The library is uploaded to a layer which is then attached to a lambda function. With layers, libraries can be reused as it's a matter of attaching the layer to the lambda function that needs it, which is awesome.
 
