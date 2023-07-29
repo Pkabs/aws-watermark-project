@@ -22,3 +22,6 @@ The project incorporates Infrastructure As Code to create, manage and provision 
 Adding the pillow libray to the lambda function was a challenge. At first, creating the library package then including it on the function package did not work as the function was failing to find the library package.
 
 After researching, I found a better way of handling libraries which was by using lambda layers. With lambda layers, one can upload libraries to a layer and attach the layer to a lambda function. With layers, libraries can be reused as its a matter of attaching to the lamba function that needs it, which is awesome.
+
+# Created by
+* Peter Kabira
