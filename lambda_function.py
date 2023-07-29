@@ -47,7 +47,7 @@ def lambda_handler(event, context):
         image_content = response['Body'].read()
 
         # Add the watermark to the image
-        watermark_text = "SAMPLE WATERMARK"
+        watermark_text = "PKW"
         image = Image.open(io.BytesIO(image_content)).convert('RGB')
         draw = ImageDraw.Draw(image)
         font = ImageFont.truetype('DejaVuSansCondensed.ttf', size=80)
