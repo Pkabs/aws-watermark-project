@@ -12,9 +12,9 @@ resource "aws_s3_bucket" "original_bucket" {
 # Create a file object for original bucket as a sample picture
 resource "aws_s3_object" "object-for-original-bucket" {
   bucket = aws_s3_bucket.original_bucket.id
-  key    = "Images/SamplePicture.jpg"
-  source = "BucketFiles/samplepicture.jpg"
-  etag = filemd5("BucketFiles/samplepicture.jpg")
+  key    = "Images/SamplePicture.png"
+  source = "BucketFiles/samplepicture.png"
+  etag = filemd5("BucketFiles/samplepicture.png")
 }
 
 
