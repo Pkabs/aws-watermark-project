@@ -176,3 +176,6 @@ infrastructure-as-code/*.tfstate.*
 # Crash log files
 infrastructure-as-code/crash.log
 infrastructure-as-code/crash.*.log
+
+# Lambda output files
+infrastructure-as-code/*.zip
