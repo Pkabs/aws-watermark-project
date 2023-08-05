@@ -1,3 +1,9 @@
+variable "aws_region" {
+  type        = string
+  description = "AWS Region"
+  default     = "us-east-1"
+}
+
 # Lambda function variables
 variable "data_rs_type" {
   type        = string

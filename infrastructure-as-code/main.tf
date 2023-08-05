@@ -1,6 +1,6 @@
 # Create S3 bucket that will have original photos
 resource "aws_s3_bucket" "original_bucket" {
-  bucket        = "terra-original-photos-bucket"
+  bucket = "terra-original-photos-bucket"
   #force_destroy = true
 
   tags = {
@@ -14,13 +14,13 @@ resource "aws_s3_object" "object-for-original-bucket" {
   bucket = aws_s3_bucket.original_bucket.id
   key    = "Images/SamplePicture.png"
   source = "BucketFiles/samplepicture.png"
-  etag = filemd5("BucketFiles/samplepicture.png")
+  etag   = filemd5("BucketFiles/samplepicture.png")
 }
 
 
 # Create S3 bucket that will have watermarked photos
 resource "aws_s3_bucket" "watermarked_bucket" {
-  bucket        = "terra-watermarked-photos-bucket"
+  bucket = "terra-watermarked-photos-bucket"
   #force_destroy = true
 
   tags = {
@@ -146,4 +146,121 @@ resource "aws_lambda_layer_version" "lambda_pillow_layer" {
     "python3.8"
   ]
   source_code_hash = filebase64sha256("pillow-lambda-layer.zip")
+}
+
+# Create an IAM role for the API Gateway
+resource "aws_iam_role" "api_gateway_role" {
+  name = "TerraApiGatewayRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "sts:AssumeRole"
+        Sid    = ""
+        Principal = {
+          Service = "apigateway.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# Attach IAM policies to the API Gateway role
+resource "aws_iam_role_policy_attachment" "s3_policy_attachment_1" {
+  role       = aws_iam_role.api_gateway_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "cloudWatch_policy_attachment_2" {
+  role       = aws_iam_role.api_gateway_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+}
+
+# Create a REST API Gateway
+resource "aws_api_gateway_rest_api" "file_upload_rest_api" {
+  name        = "TerraFileUploadRestAPI"
+  description = "REST API to upload files"
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
+  binary_media_types = ["*/*"]
+}
+
+# Create a resource for the API Gateway
+resource "aws_api_gateway_resource" "bucket_resource" {
+  rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
+  parent_id   = aws_api_gateway_rest_api.file_upload_rest_api.root_resource_id
+  path_part   = "{bucketname}"
+}
+
+
+# Create a resource for the API Gateway
+resource "aws_api_gateway_resource" "file_name_resource" {
+  rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
+  parent_id   = aws_api_gateway_resource.bucket_resource.id
+  path_part   = "{filename}"
+}
+
+
+# Create a method for the API Gateway
+resource "aws_api_gateway_method" "file_upload_api_method" {
+  rest_api_id   = aws_api_gateway_rest_api.file_upload_rest_api.id
+  resource_id   = aws_api_gateway_resource.file_name_resource.id
+  http_method   = "PUT"
+  authorization = "NONE"
+  request_parameters = {
+    "method.request.path.bucketname" = true,
+    "method.request.path.filename"   = true
+  }
+}
+
+resource "aws_api_gateway_method_response" "file_upload_api_method_resp" {
+  rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
+  resource_id = aws_api_gateway_resource.file_name_resource.id
+  http_method = aws_api_gateway_method.file_upload_api_method.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
+# Create an integration for the API Gateway
+resource "aws_api_gateway_integration" "api_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.file_upload_rest_api.id
+  resource_id             = aws_api_gateway_resource.file_name_resource.id
+  http_method             = aws_api_gateway_method.file_upload_api_method.http_method
+  integration_http_method = "PUT"
+  type                    = "AWS"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:s3:path/{bucketname}/{filename}"
+  credentials             = aws_iam_role.api_gateway_role.arn
+
+  request_parameters = {
+    "integration.request.path.bucketname" = "method.request.path.bucketname",
+    "integration.request.path.filename"   = "method.request.path.filename"
+  }
+}
+
+# Create a deployment for the API Gateway
+resource "aws_api_gateway_deployment" "file_upload_api_deployment" {
+  rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
+
+  triggers = {
+    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.file_upload_rest_api.body))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on = [aws_api_gateway_method.file_upload_api_method, aws_api_gateway_integration.api_integration]
+}
+
+# Create a stage area for the api gateway
+resource "aws_api_gateway_stage" "api_gw_stage" {
+  deployment_id = aws_api_gateway_deployment.file_upload_api_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.file_upload_rest_api.id
+  stage_name    = "TerraDev"
 }
