@@ -75,20 +75,6 @@ resource "aws_lambda_permission" "allow_bucket" {
 }
 
 # Create an S3 bucket notification for jpg images to trigger the Lambda function
-resource "aws_s3_bucket_notification" "jpg_bucket_notification" {
-  bucket = aws_s3_bucket.original_bucket.id
-
-  lambda_function {
-    lambda_function_arn = aws_lambda_function.watermark_lambda.arn
-    events              = ["s3:ObjectCreated:*"]
-    filter_prefix       = "Images/"
-    filter_suffix       = ".jpg"
-  }
-
-  depends_on = [aws_lambda_permission.allow_bucket]
-}
-
-# Create a S3 bucket notification for png images to trigger the Lambda function
 resource "aws_s3_bucket_notification" "png_bucket_notification" {
   bucket = aws_s3_bucket.original_bucket.id
 
@@ -101,6 +87,7 @@ resource "aws_s3_bucket_notification" "png_bucket_notification" {
 
   depends_on = [aws_lambda_permission.allow_bucket]
 }
+
 
 # Create a data resource for creating a zip file for python source file
 data "archive_file" "lambda_zipfile" {
