@@ -5,7 +5,7 @@ output "lambda_function_arn" {
 }
 
 output "api_url" {
-  value = aws_api_gateway_deployment.file_upload_api_deployment.invoke_url
+  value = aws_api_gateway_stage.api_gw_stage.invoke_url
 }
 
 output "api_gateway_arn" {
