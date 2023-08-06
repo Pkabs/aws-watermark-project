@@ -230,12 +230,25 @@ resource "aws_api_gateway_integration" "api_integration" {
   }
 }
 
+resource "aws_api_gateway_integration_response" "api_integration_resp" {
+  rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
+  resource_id = aws_api_gateway_resource.file_name_resource.id
+  http_method = aws_api_gateway_method.file_upload_api_method.http_method
+  status_code = aws_api_gateway_method_response.file_upload_api_method_resp.status_code
+}
+
 # Create a deployment for the API Gateway
 resource "aws_api_gateway_deployment" "file_upload_api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
 
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.file_upload_rest_api.body))
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_rest_api.file_upload_rest_api.body,
+      aws_api_gateway_resource.bucket_resource.id,
+      aws_api_gateway_resource.file_name_resource.id,
+      aws_api_gateway_method.file_upload_api_method.id,
+      aws_api_gateway_integration.api_integration.id,
+    aws_api_gateway_integration_response.api_integration_resp.id]))
   }
 
   lifecycle {
