@@ -183,7 +183,7 @@ resource "aws_api_gateway_resource" "bucket_resource" {
 }
 
 
-# Create a resource for the API Gateway
+# Create a nested resource for the API Gateway
 resource "aws_api_gateway_resource" "file_name_resource" {
   rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
   parent_id   = aws_api_gateway_resource.bucket_resource.id
