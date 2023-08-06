@@ -182,11 +182,18 @@ resource "aws_api_gateway_resource" "bucket_resource" {
   path_part   = "{bucketname}"
 }
 
+# Create a resource for the API Gateway
+resource "aws_api_gateway_resource" "dir_resource" {
+  rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
+  parent_id   = aws_api_gateway_resource.bucket_resource.id
+  path_part   = "Images"
+}
+
 
 # Create a nested resource for the API Gateway
 resource "aws_api_gateway_resource" "file_name_resource" {
   rest_api_id = aws_api_gateway_rest_api.file_upload_rest_api.id
-  parent_id   = aws_api_gateway_resource.bucket_resource.id
+  parent_id   = aws_api_gateway_resource.dir_resource.id
   path_part   = "{filename}"
 }
 
@@ -221,7 +228,7 @@ resource "aws_api_gateway_integration" "api_integration" {
   http_method             = aws_api_gateway_method.file_upload_api_method.http_method
   integration_http_method = "PUT"
   type                    = "AWS"
-  uri                     = "arn:aws:apigateway:${var.aws_region}:s3:path/{bucketname}/{filename}"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:s3:path/{bucketname}/Images/{filename}"
   credentials             = aws_iam_role.api_gateway_role.arn
 
   request_parameters = {
@@ -245,6 +252,7 @@ resource "aws_api_gateway_deployment" "file_upload_api_deployment" {
     redeployment = sha1(jsonencode([
       aws_api_gateway_rest_api.file_upload_rest_api.body,
       aws_api_gateway_resource.bucket_resource.id,
+      aws_api_gateway_resource.dir_resource.id,
       aws_api_gateway_resource.file_name_resource.id,
       aws_api_gateway_method.file_upload_api_method.id,
       aws_api_gateway_integration.api_integration.id,
