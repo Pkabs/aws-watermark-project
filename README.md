@@ -8,7 +8,8 @@ This project is a solution to watermark images using AWS services. The AWS servi
 * Cloud watch
 
 ## API Gateway
-API gateway, a serverless service, is used to create a REST API that uploads images to the source S3 bucket.
+A serverless service used to create a REST API that uploads images to the source S3 bucket.
+![Postman sample](MarkdownFiles/postman.jpg)
 
 ## S3 Bucket
 There are two S3 buckets, one to store source images and the other one to store watermarked images. Once an image is uploaded on the source bucket, it triggers the lambda function which watermarks the image then stores the watermarked image on the watermarked bucket.
