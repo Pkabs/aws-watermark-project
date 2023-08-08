@@ -2,9 +2,13 @@
 ![Architecture Diagram](MarkdownFiles/ArchitecturalDiagram.jpg)
 
 This project is a solution to watermark images using AWS services. The AWS services used are:
+* API Gateway
 * S3 bucket
 * Lambda function
 * Cloud watch
+
+## API Gateway
+API gateway, a serverless service, is used to create a REST API that uploads images to a S3 bucket.
 
 ## S3 Bucket
 There are two S3 buckets, one to store source images and the other one to store watermarked images. Once an image is uploaded on the source bucket, it triggers the lambda function which watermarks the image then stores the watermarked image on the watermarked bucket.
