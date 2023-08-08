@@ -1,4 +1,4 @@
-# AWS-Watermark-Project
+# AWS-Image-Watermark-Project
 ![Architecture Diagram](MarkdownFiles/ArchitecturalDiagram.jpg)
 
 This project is a solution to watermark images using AWS services. The AWS services used are:
